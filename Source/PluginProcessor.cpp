@@ -11,13 +11,16 @@ NexusImagerAudioProcessor::~NexusImagerAudioProcessor() {}
 
 void NexusImagerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    juce::dsp::ProcessSpec spec { sampleRate, (juce::uint32)samplesPerBlock, 2 };
+    const int numChannels = getTotalNumOutputChannels();
+    juce::dsp::ProcessSpec spec { sampleRate, (juce::uint32)samplesPerBlock, (juce::uint32)numChannels };
+    
     crossover.prepare(spec);
 
     for (int i = 0; i < 4; ++i)
     {
         engines[i].prepare(sampleRate);
-        bandBuffers[i].setSize(2, samplesPerBlock);
+        bandBuffers[i].setSize(numChannels, samplesPerBlock);
+        bandBuffers[i].clear();
     }
 }
 
@@ -49,27 +52,38 @@ void NexusImagerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     for (int i = 0; i < 4; ++i)
     {
         juce::String id = juce::String(i);
-        auto width = apvts.getRawParameterValue("wid" + id)->load();
-        auto widen = apvts.getRawParameterValue("wdr" + id)->load();
-        auto mode  = (int)apvts.getRawParameterValue("mod" + id)->load();
-        auto mute  = apvts.getRawParameterValue("mut" + id)->load() > 0.5f;
-        auto solo  = apvts.getRawParameterValue("sol" + id)->load() > 0.5f;
+        
+        auto* pWidth = apvts.getRawParameterValue("wid" + id);
+        auto* pWiden = apvts.getRawParameterValue("wdr" + id);
+        auto* pMode  = apvts.getRawParameterValue("mod" + id);
+        auto* pMute  = apvts.getRawParameterValue("mut" + id);
+        auto* pSolo  = apvts.getRawParameterValue("sol" + id);
+
+        if (pWidth == nullptr || pWiden == nullptr || pMode == nullptr || pMute == nullptr || pSolo == nullptr)
+            continue;
+
+        auto width = pWidth->load();
+        auto widen = pWiden->load();
+        auto mode  = (int)pMode->load();
+        auto mute  = pMute->load() > 0.5f;
+        auto solo  = pSolo->load() > 0.5f;
 
         bool shouldProcess = true;
         if (anySolo && !solo) shouldProcess = false;
         if (mute) shouldProcess = false;
 
-        engines[i].processBand(bandBuffers[i].getWritePointer(0), 
-                              bandBuffers[i].getWritePointer(1), 
-                              buffer.getNumSamples(), 
-                              width, widen, mode, !shouldProcess);
+        float* lPtr = bandBuffers[i].getWritePointer(0);
+        float* rPtr = bandBuffers[i].getNumChannels() > 1 ? bandBuffers[i].getWritePointer(1) : nullptr;
+
+        engines[i].processBand(lPtr, rPtr, buffer.getNumSamples(), width, widen, mode, !shouldProcess);
     }
 
     // 3. Sumar bandas de vuelta al buffer principal
     buffer.clear();
+    const int outChannels = buffer.getNumChannels();
     for (int i = 0; i < 4; ++i)
     {
-        for (int ch = 0; ch < 2; ++ch)
+        for (int ch = 0; ch < juce::jmin(outChannels, (int)bandBuffers[i].getNumChannels()); ++ch)
             buffer.addFrom(ch, 0, bandBuffers[i], ch, 0, buffer.getNumSamples());
     }
 }

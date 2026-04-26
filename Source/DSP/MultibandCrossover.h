@@ -15,7 +15,7 @@ public:
 
     void prepare(const juce::dsp::ProcessSpec& spec)
     {
-        numChannels = spec.numChannels;
+        numChannels = (int)spec.numChannels;
         sampleRate = spec.sampleRate;
 
         for (int i = 0; i < 3; ++i)
@@ -42,35 +42,31 @@ public:
     void process(const juce::dsp::AudioBlock<float>& inputBlock, std::array<juce::AudioBuffer<float>, 4>& buffers)
     {
         const int numSamples = (int)inputBlock.getNumSamples();
+        const int audioChannels = (int)inputBlock.getNumChannels();
 
-        // Limpiar buffers y copiar entrada para procesar en paralelo/cascada
+        // NO redimensionar buffers aquí en producción real para evitar glitches.
+        // Asumimos que buffers ya tienen el tamaño correcto de prepareToPlay.
+        
         for (int i = 0; i < 4; ++i)
         {
-            buffers[i].setSize(numChannels, numSamples, false, false, true);
-            buffers[i].clear();
-            
-            for (int ch = 0; ch < numChannels; ++ch)
+            for (int ch = 0; ch < juce::jmin(audioChannels, numChannels); ++ch)
                 buffers[i].copyFrom(ch, 0, inputBlock.getChannelPointer(ch), numSamples);
         }
 
-        // Diseño de cascada para separación de 4 bandas
+        // Aplicación del crossover en cascada
         juce::dsp::AudioBlock<float> b0(buffers[0]);
         juce::dsp::AudioBlock<float> b1(buffers[1]);
         juce::dsp::AudioBlock<float> b2(buffers[2]);
         juce::dsp::AudioBlock<float> b3(buffers[3]);
 
-        // Banda 0: Low
         filters[0].process(juce::dsp::ProcessContextReplacing<float>(b0));
 
-        // Banda 1: Low-Mid
         highFilters[0].process(juce::dsp::ProcessContextReplacing<float>(b1));
         filters[1].process(juce::dsp::ProcessContextReplacing<float>(b1));
 
-        // Banda 2: High-Mid
         highFilters[1].process(juce::dsp::ProcessContextReplacing<float>(b2));
         filters[2].process(juce::dsp::ProcessContextReplacing<float>(b2));
 
-        // Banda 3: High
         highFilters[2].process(juce::dsp::ProcessContextReplacing<float>(b3));
     }
 

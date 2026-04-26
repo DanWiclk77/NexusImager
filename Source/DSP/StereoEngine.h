@@ -24,10 +24,17 @@ public:
 
     void processBand(float* left, float* right, int numSamples, float width, float wideningAmount, int monitorMode, bool isMuted)
     {
-        if (isMuted)
+        if (isMuted || left == nullptr)
         {
-            juce::FloatVectorOperations::clear(left, numSamples);
-            juce::FloatVectorOperations::clear(right, numSamples);
+            if (left != nullptr) juce::FloatVectorOperations::clear(left, numSamples);
+            if (right != nullptr) juce::FloatVectorOperations::clear(right, numSamples);
+            return;
+        }
+
+        // Si es mono, operamos solo en Left
+        if (right == nullptr)
+        {
+            // En mono simple, el imager no hace nada más que Volumen/Mute
             return;
         }
 
