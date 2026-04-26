@@ -2,7 +2,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-class NexusImagerAudioProcessorEditor : public juce::AudioProcessorEditor
+class NexusImagerAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer
 {
 public:
     NexusImagerAudioProcessorEditor (NexusImagerAudioProcessor&);
@@ -10,6 +10,7 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
+    void timerCallback() override;
 
 private:
     NexusImagerAudioProcessor& audioProcessor;
@@ -21,6 +22,9 @@ private:
         juce::ToggleButton soloButton;
         juce::ToggleButton muteButton;
         juce::ComboBox modeSelector;
+        juce::Label title;
+        juce::Label widthVal;
+        juce::Label widenVal;
 
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> widthAttachment;
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> widenAttachment;
@@ -30,8 +34,13 @@ private:
     };
     BandUI bands[4];
 
-    // Vectorscope Placeholder (Implementar con OpenGL para rendimiento Pro)
+    // Crossover Sliders
+    juce::Slider freqSliders[3];
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> freqAttachments[3];
+
+    // Vectorscope
     void drawVectorscope(juce::Graphics& g, juce::Rectangle<int> area);
+    std::vector<juce::Point<float>> scopePoints;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NexusImagerAudioProcessorEditor)
 };

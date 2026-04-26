@@ -33,9 +33,16 @@ public:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
 
+    // Para el Vectorscope
+    void getVectorscopePoints(std::vector<juce::Point<float>>& points);
+
 private:
     LinearPhaseCrossover crossover;
     StereoEngine engines[4];
+    
+    // Circbuffer para el Vectorscope
+    juce::AudioBuffer<float> scopeBuffer;
+    std::atomic<int> scopeWritePos { 0 };
     
     // Buffers para las bandas
     std::array<juce::AudioBuffer<float>, 4> bandBuffers;

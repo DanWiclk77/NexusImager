@@ -4,23 +4,46 @@
 NexusImagerAudioProcessorEditor::NexusImagerAudioProcessorEditor (NexusImagerAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
-    setSize (800, 500);
+    setSize (800, 600);
+
+    juce::StringArray bandNames = { "LOW", "LOW-MID", "HIGH-MID", "HIGH" };
 
     for (int i = 0; i < 4; ++i)
     {
         auto prefix = juce::String(i);
 
-        // Configuración de Sliders
+        addAndMakeVisible(bands[i].title);
+        bands[i].title.setText(bandNames[i], juce::dontSendNotification);
+        bands[i].title.setJustificationType(juce::Justification::centred);
+        bands[i].title.setFont(juce::Font(14.0f, juce::Font::bold));
+        bands[i].title.setColour(juce::Label::textColourId, juce::Colours::cyan);
+
+        // Combo
+        addAndMakeVisible(bands[i].modeSelector);
+        bands[i].modeSelector.addItemList(juce::StringArray{"Stereo", "Mid", "Side"}, 1);
+        bands[i].modeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.apvts, "mod" + prefix, bands[i].modeSelector);
+
+        // Stereo Enhancer (Width)
+        addAndMakeVisible(bands[i].labelWidth);
+        bands[i].labelWidth.setText("Enhancer", juce::dontSendNotification);
+        bands[i].labelWidth.setFont(juce::Font(10.0f));
         addAndMakeVisible(bands[i].widthSlider);
         bands[i].widthSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        bands[i].widthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+        bands[i].widthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+        bands[i].widthSlider.setTextValueSuffix("%");
         bands[i].widthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "wid" + prefix, bands[i].widthSlider);
 
+        // Widener
+        addAndMakeVisible(bands[i].labelWiden);
+        bands[i].labelWiden.setText("Widener", juce::dontSendNotification);
+        bands[i].labelWiden.setFont(juce::Font(10.0f));
         addAndMakeVisible(bands[i].widenSlider);
         bands[i].widenSlider.setSliderStyle(juce::Slider::LinearBarVertical);
+        bands[i].widenSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+        bands[i].widenSlider.setTextValueSuffix("%");
         bands[i].widenAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "wdr" + prefix, bands[i].widenSlider);
 
-        // Configuración de Botones
+        // Buttons
         addAndMakeVisible(bands[i].soloButton);
         bands[i].soloButton.setButtonText("S");
         bands[i].soloAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "sol" + prefix, bands[i].soloButton);
@@ -28,69 +51,127 @@ NexusImagerAudioProcessorEditor::NexusImagerAudioProcessorEditor (NexusImagerAud
         addAndMakeVisible(bands[i].muteButton);
         bands[i].muteButton.setButtonText("M");
         bands[i].muteAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "mut" + prefix, bands[i].muteButton);
-
-        // Selector de Modo
-        addAndMakeVisible(bands[i].modeSelector);
-        bands[i].modeSelector.addItemList(juce::StringArray{"Stereo", "Mid", "Side"}, 1);
-        bands[i].modeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.apvts, "mod" + prefix, bands[i].modeSelector);
     }
+
+    // Freq Sliders
+    for (int i = 0; i < 3; ++i)
+    {
+        addAndMakeVisible(freqSliders[i]);
+        freqSliders[i].setSliderStyle(juce::Slider::LinearHorizontal);
+        freqSliders[i].setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 15);
+        freqSliders[i].setTextValueSuffix(" Hz");
+        freqAttachments[i] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "f" + juce::String(i+1), freqSliders[i]);
+    }
+
+    startTimerHz(30); // 30 FPS para el scope
 }
 
-NexusImagerAudioProcessorEditor::~NexusImagerAudioProcessorEditor() {}
+NexusImagerAudioProcessorEditor::~NexusImagerAudioProcessorEditor() 
+{
+    stopTimer();
+}
+
+void NexusImagerAudioProcessorEditor::timerCallback()
+{
+    audioProcessor.getVectorscopePoints(scopePoints);
+    repaint();
+}
 
 void NexusImagerAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // Dark Carbon Theme
-    g.fillAll (juce::Colour(0xFF0D0D0D));
+    g.fillAll (juce::Colour(0xFF070707));
 
-    // Logo / Header
+    // Logo
     g.setColour (juce::Colours::cyan);
-    g.setFont (juce::Font("Orbitron", 22.0f, juce::Font::bold));
-    g.drawText ("NEXUS IMAGER", getLocalBounds().removeFromTop(40), juce::Justification::centred, true);
+    g.setFont (juce::Font("Orbitron", 24.0f, juce::Font::bold));
+    g.drawText ("NEXUS IMAGER", 0, 10, getWidth(), 40, juce::Justification::centred);
 
-    // Reference Grid for Vectorscope
     auto area = getLocalBounds().reduced(20);
     auto scopeArea = area.removeFromTop(200);
     
-    g.setColour(juce::Colours::grey.withAlpha(0.1f));
-    for (int i = 0; i < 10; ++i)
-    {
-        float x = (float)scopeArea.getX() + (float)scopeArea.getWidth() * (float)i / 10.0f;
-        g.drawVerticalLine((int)x, (float)scopeArea.getY(), (float)scopeArea.getBottom());
-    }
+    // Background Scope
+    g.setColour(juce::Colours::black);
+    g.fillRect(scopeArea);
+    g.setColour(juce::Colours::cyan.withAlpha(0.1f));
+    g.drawRect(scopeArea, 1);
+
+    // Crosshair
+    g.setColour(juce::Colours::white.withAlpha(0.1f));
+    g.drawVerticalLine(scopeArea.getCentreX(), (float)scopeArea.getY(), (float)scopeArea.getBottom());
+    g.drawHorizontalLine(scopeArea.getCentreY(), (float)scopeArea.getX(), (float)scopeArea.getRight());
 
     drawVectorscope(g, scopeArea);
 
-    g.setColour(juce::Colours::cyan.withAlpha(0.3f));
-    g.drawRect(scopeArea, 1);
+    // Footer info
+    g.setColour(juce::Colours::grey);
+    g.setFont(10.0f);
+    g.drawText("NEXUSAUDIO RESEARCH LABS", 0, getHeight() - 20, getWidth(), 20, juce::Justification::centred);
 }
 
 void NexusImagerAudioProcessorEditor::drawVectorscope(juce::Graphics& g, juce::Rectangle<int> area)
 {
-    g.setColour(juce::Colours::cyan.withAlpha(0.6f));
-    // Simulación de puntos Glow
-    // p = pivot + Point<float> (radius * cosf(angle), radius * sinf(angle))
+    if (scopePoints.empty()) return;
+
+    juce::Path p;
+    float centerX = (float)area.getCentreX();
+    float centerY = (float)area.getCentreY();
+    float scale = (float)area.getWidth() * 0.4f;
+
+    bool first = true;
+    for (const auto& pt : scopePoints)
+    {
+        // Goniometer rotation: M = (L+R)/2, S = (L-R)/2
+        float m = (pt.x + pt.y) * 0.5f;
+        float s = (pt.x - pt.y) * 0.5f;
+
+        float x = centerX + s * scale;
+        float y = centerY - m * scale;
+
+        if (first) { p.startNewSubPath(x, y); first = false; }
+        else p.lineTo(x, y);
+    }
+
+    g.setColour(juce::Colours::cyan.withAlpha(0.7f));
+    g.strokePath(p, juce::PathStrokeType(1.0f));
+    
+    // Glow effect
+    g.setColour(juce::Colours::cyan.withAlpha(0.2f));
+    g.strokePath(p, juce::PathStrokeType(3.0f));
 }
 
 void NexusImagerAudioProcessorEditor::resized()
 {
     auto area = getLocalBounds().reduced(20);
-    area.removeFromTop(220); // Espacio para el Vectorscope
+    area.removeFromTop(220); // Scope space
 
+    // Freq sliders area
+    auto fArea = area.removeFromTop(60);
+    int fWidth = fArea.getWidth() / 3;
+    for (int i = 0; i < 3; ++i)
+        freqSliders[i].setBounds(fArea.removeFromLeft(fWidth).reduced(10, 5));
+
+    area.removeFromTop(10); // padding
+
+    // Bands area
     auto bandWidth = area.getWidth() / 4;
     for (int i = 0; i < 4; ++i)
     {
-        auto bArea = area.removeFromLeft(bandWidth).reduced(10);
+        auto bArea = area.removeFromLeft(bandWidth).reduced(5);
         
-        auto modeArea = bArea.removeFromTop(20);
-        bands[i].modeSelector.setBounds(modeArea);
+        bands[i].title.setBounds(bArea.removeFromTop(20));
+        bands[i].modeSelector.setBounds(bArea.removeFromTop(25).reduced(10, 2));
+        
+        auto controls = bArea.removeFromTop(160);
+        auto leftPart = controls.removeFromLeft(controls.getWidth() * 0.6);
+        
+        bands[i].labelWidth.setBounds(leftPart.removeFromTop(15));
+        bands[i].widthSlider.setBounds(leftPart.removeFromTop(80));
+        
+        auto buttons = leftPart.removeFromTop(30).reduced(5, 2);
+        bands[i].soloButton.setBounds(buttons.removeFromLeft(buttons.getWidth() * 0.5));
+        bands[i].muteButton.setBounds(buttons);
 
-        auto sliderArea = bArea.removeFromTop(bArea.getHeight() * 0.7);
-        bands[i].widthSlider.setBounds(sliderArea.removeFromTop(sliderArea.getHeight() * 0.6));
-        bands[i].widenSlider.setBounds(sliderArea);
-        
-        auto buttonArea = bArea;
-        bands[i].soloButton.setBounds(buttonArea.removeFromLeft(buttonArea.getWidth() * 0.5));
-        bands[i].muteButton.setBounds(buttonArea);
+        bands[i].labelWiden.setBounds(controls.removeFromTop(15));
+        bands[i].widenSlider.setBounds(controls.removeFromTop(100));
     }
 }
