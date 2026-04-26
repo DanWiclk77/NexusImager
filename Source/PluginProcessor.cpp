@@ -48,11 +48,12 @@ void NexusImagerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
 
     for (int i = 0; i < 4; ++i)
     {
-        auto width = apvts.getRawParameterValue("width" + juce::String(i))->load();
-        auto widen = apvts.getRawParameterValue("widener" + juce::String(i))->load();
-        auto mode  = (int)apvts.getRawParameterValue("mode" + juce::String(i))->load();
-        auto mute  = apvts.getRawParameterValue("mute" + juce::String(i))->load() > 0.5f;
-        auto solo  = apvts.getRawParameterValue("solo" + juce::String(i))->load() > 0.5f;
+        juce::String id = juce::String(i);
+        auto width = apvts.getRawParameterValue("wid" + id)->load();
+        auto widen = apvts.getRawParameterValue("wdr" + id)->load();
+        auto mode  = (int)apvts.getRawParameterValue("mod" + id)->load();
+        auto mute  = apvts.getRawParameterValue("mut" + id)->load() > 0.5f;
+        auto solo  = apvts.getRawParameterValue("sol" + id)->load() > 0.5f;
 
         bool shouldProcess = true;
         if (anySolo && !solo) shouldProcess = false;
@@ -78,11 +79,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout NexusImagerAudioProcessor::c
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
     for (int i = 0; i < 4; ++i)
     {
-        params.push_back(std::make_unique<juce::AudioParameterFloat>("width" + juce::String(i), "Width " + juce::String(i), 0.0f, 2.0f, 1.0f));
-        params.push_back(std::make_unique<juce::AudioParameterFloat>("widener" + juce::String(i), "Widener " + juce::String(i), 0.0f, 1.0f, 0.0f));
-        params.push_back(std::make_unique<juce::AudioParameterBool>("mute" + juce::String(i), "Mute " + juce::String(i), false));
-        params.push_back(std::make_unique<juce::AudioParameterBool>("solo" + juce::String(i), "Solo " + juce::String(i), false));
-        params.push_back(std::make_unique<juce::AudioParameterChoice>("mode" + juce::String(i), "Mode " + juce::String(i), juce::StringArray{"Stereo", "Mid", "Side"}, 0));
+        juce::String id = juce::String(i);
+        params.push_back(std::make_unique<juce::AudioParameterFloat>("wid" + id, "Width " + id, 0.0f, 2.0f, 1.0f));
+        params.push_back(std::make_unique<juce::AudioParameterFloat>("wdr" + id, "Widener " + id, 0.0f, 1.0f, 0.0f));
+        params.push_back(std::make_unique<juce::AudioParameterBool>("mut" + id, "Mute " + id, false));
+        params.push_back(std::make_unique<juce::AudioParameterBool>("sol" + id, "Solo " + id, false));
+        params.push_back(std::make_unique<juce::AudioParameterChoice>("mod" + id, "Mode " + id, juce::StringArray{"Stereo", "Mid", "Side"}, 0));
     }
     return { params.begin(), params.end() };
 }

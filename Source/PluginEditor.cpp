@@ -14,25 +14,25 @@ NexusImagerAudioProcessorEditor::NexusImagerAudioProcessorEditor (NexusImagerAud
         addAndMakeVisible(bands[i].widthSlider);
         bands[i].widthSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
         bands[i].widthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-        bands[i].widthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "width" + prefix, bands[i].widthSlider);
+        bands[i].widthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "wid" + prefix, bands[i].widthSlider);
 
         addAndMakeVisible(bands[i].widenSlider);
         bands[i].widenSlider.setSliderStyle(juce::Slider::LinearBarVertical);
-        bands[i].widenAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "widener" + prefix, bands[i].widenSlider);
+        bands[i].widenAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "wdr" + prefix, bands[i].widenSlider);
 
         // Configuración de Botones
         addAndMakeVisible(bands[i].soloButton);
         bands[i].soloButton.setButtonText("S");
-        bands[i].soloAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "solo" + prefix, bands[i].soloButton);
+        bands[i].soloAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "sol" + prefix, bands[i].soloButton);
 
         addAndMakeVisible(bands[i].muteButton);
         bands[i].muteButton.setButtonText("M");
-        bands[i].muteAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "mute" + prefix, bands[i].muteButton);
+        bands[i].muteAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "mut" + prefix, bands[i].muteButton);
 
         // Selector de Modo
         addAndMakeVisible(bands[i].modeSelector);
         bands[i].modeSelector.addItemList(juce::StringArray{"Stereo", "Mid", "Side"}, 1);
-        bands[i].modeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.apvts, "mode" + prefix, bands[i].modeSelector);
+        bands[i].modeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.apvts, "mod" + prefix, bands[i].modeSelector);
     }
 }
 
