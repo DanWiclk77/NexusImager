@@ -11,7 +11,12 @@ NexusImagerAudioProcessor::~NexusImagerAudioProcessor() {}
 
 void NexusImagerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    const int numChannels = getTotalNumOutputChannels();
+    isPrepared = false;
+
+    if (sampleRate <= 0.0 || samplesPerBlock <= 0)
+        return;
+
+    const int numChannels = juce::jmax(2, getTotalNumOutputChannels());
     juce::dsp::ProcessSpec spec { sampleRate, (juce::uint32)samplesPerBlock, (juce::uint32)numChannels };
     
     crossover.prepare(spec);
@@ -22,12 +27,17 @@ void NexusImagerAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         bandBuffers[i].setSize(numChannels, samplesPerBlock);
         bandBuffers[i].clear();
     }
+
+    isPrepared = true;
 }
 
 void NexusImagerAudioProcessor::releaseResources() {}
 
 void NexusImagerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    if (!isPrepared.load())
+        return;
+
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -42,7 +52,8 @@ void NexusImagerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     bool anySolo = false;
     for (int i = 0; i < 4; ++i)
     {
-        if (apvts.getRawParameterValue("solo" + juce::String(i))->load() > 0.5f)
+        auto* pSolo = apvts.getRawParameterValue("sol" + juce::String(i));
+        if (pSolo != nullptr && pSolo->load() > 0.5f)
         {
             anySolo = true;
             break;

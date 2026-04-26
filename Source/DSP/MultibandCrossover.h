@@ -15,6 +15,9 @@ public:
 
     void prepare(const juce::dsp::ProcessSpec& spec)
     {
+        if (spec.sampleRate <= 0.0)
+            return;
+
         numChannels = (int)spec.numChannels;
         sampleRate = spec.sampleRate;
 
@@ -34,14 +37,14 @@ public:
     {
         if (index >= 0 && index < 3)
         {
-            frequencies[index] = frequency;
+            frequencies[index] = juce::jlimit(20.0f, (float)sampleRate * 0.45f, frequency);
             updateFilters(index);
         }
     }
 
     void process(const juce::dsp::AudioBlock<float>& inputBlock, std::array<juce::AudioBuffer<float>, 4>& buffers)
     {
-        const int numSamples = (int)inputBlock.getNumSamples();
+        const int numSamples = juce::jmin((int)inputBlock.getNumSamples(), buffers[0].getNumSamples());
         const int audioChannels = (int)inputBlock.getNumChannels();
 
         // NO redimensionar buffers aquí en producción real para evitar glitches.
@@ -73,7 +76,9 @@ public:
 private:
     void updateFilters(int index)
     {
-        float freq = frequencies[index];
+        if (sampleRate <= 0.0) return;
+
+        float freq = juce::jlimit(20.0f, (float)sampleRate * 0.45f, frequencies[index]);
         filters[index].setCutoffFrequency(freq);
         highFilters[index].setCutoffFrequency(freq);
     }

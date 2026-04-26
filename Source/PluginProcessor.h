@@ -39,6 +39,8 @@ private:
     
     // Buffers para las bandas
     std::array<juce::AudioBuffer<float>, 4> bandBuffers;
+    
+    std::atomic<bool> isPrepared { false };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NexusImagerAudioProcessor)
 };

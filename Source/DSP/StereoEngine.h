@@ -24,6 +24,8 @@ public:
 
     void processBand(float* left, float* right, int numSamples, float width, float wideningAmount, int monitorMode, bool isMuted)
     {
+        if (numSamples <= 0) return;
+        
         if (isMuted || left == nullptr)
         {
             if (left != nullptr) juce::FloatVectorOperations::clear(left, numSamples);
