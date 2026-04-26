@@ -1,0 +1,38 @@
+name: Build VST3 (Windows)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build VST3 on Windows
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Set up CMake
+      uses: jwlawson/actions-setup-cmake@v1.13
+
+    - name: Install JUCE Dependencies
+      run: |
+        # JUCE se puede clonar aquí si no es un submódulo
+        git clone --depth 1 https://github.com/juce-framework/JUCE.git
+
+    - name: Configure CMake
+      run: cmake -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release -DJUCE_DIR=./JUCE
+
+    - name: Build Plugin
+      run: cmake --build build --config Release --target NexusImager_VST3
+
+    - name: Upload VST3 Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: NexusImager_VST3_Windows
+        path: build/NexusImager_Artefacts/Release/VST3/Nexus Imager.vst3
