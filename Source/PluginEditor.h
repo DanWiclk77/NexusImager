@@ -23,8 +23,8 @@ private:
         juce::ToggleButton muteButton;
         juce::ComboBox modeSelector;
         juce::Label title;
-        juce::Label widthVal;
-        juce::Label widenVal;
+        juce::Label labelWidth;
+        juce::Label labelWiden;
 
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> widthAttachment;
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> widenAttachment;

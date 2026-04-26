@@ -99,17 +99,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout NexusImagerAudioProcessor::c
     for (int i = 0; i < 4; ++i)
     {
         juce::String id = juce::String(i);
-        params.push_back(std::make_unique<juce::AudioParameterFloat>("wid" + id, "Stereo Enhancer " + id, 0.0f, 2.0f, 1.0f));
-        params.push_back(std::make_unique<juce::AudioParameterFloat>("wdr" + id, "Widener " + id, 0.0f, 2.0f, 0.0f));
+        params.push_back(std::make_unique<juce::AudioParameterFloat>("wid" + id, "Stereo Enhancer " + id, 0.0f, 1.5f, 1.0f));
+        params.push_back(std::make_unique<juce::AudioParameterFloat>("wdr" + id, "Widener " + id, 0.0f, 1.5f, 0.0f));
         params.push_back(std::make_unique<juce::AudioParameterBool>("mut" + id, "Mute " + id, false));
         params.push_back(std::make_unique<juce::AudioParameterBool>("sol" + id, "Solo " + id, false));
         params.push_back(std::make_unique<juce::AudioParameterChoice>("mod" + id, "Mode " + id, juce::StringArray{"Stereo", "Mid", "Side"}, 0));
     }
 
     // Crossovers
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("f1", "Low-Mid Crossover", 20.0f, 500.0f, 200.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("f2", "Mid-High Crossover", 500.0f, 5000.0f, 1000.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("f3", "High Crossover", 5000.0f, 20000.0f, 5000.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("f1", "Low-Mid Cross", juce::NormalisableRange<float>(20.0f, 1000.0f, 1.0f, 0.5f), 200.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("f2", "Mid-High Cross", juce::NormalisableRange<float>(500.0f, 5000.0f, 1.0f, 0.5f), 1000.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("f3", "High Cross", juce::NormalisableRange<float>(2000.0f, 20000.0f, 1.0f, 0.5f), 5000.0f));
 
     return { params.begin(), params.end() };
 }

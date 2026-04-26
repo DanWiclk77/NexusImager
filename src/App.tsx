@@ -26,7 +26,7 @@ const BandControl = ({ index }: { index: number }) => {
       </div>
 
       <div className="relative flex flex-col items-center group">
-        <span className="text-[10px] font-mono text-gray-500 mb-2 uppercase tracking-widest group-hover:text-cyan-400 transition-colors">Width</span>
+        <span className="text-[10px] font-mono text-gray-500 mb-2 uppercase tracking-widest group-hover:text-cyan-400 transition-colors">Stereo Enhancer</span>
         <div className="relative w-16 h-16 rounded-full bg-gradient-to-b from-[#222] to-[#0a0a0a] border-2 border-[#333] flex items-center justify-center shadow-lg cursor-pointer overflow-hidden">
           <motion.div 
             style={{ rotate: rotation }}
@@ -34,13 +34,13 @@ const BandControl = ({ index }: { index: number }) => {
           >
             <div className="w-1 h-3 bg-cyan-500 rounded-full shadow-[0_0_8px_cyan]" />
           </motion.div>
-          <span className="text-[10px] font-mono text-gray-400 z-10">{width}%</span>
+          <span className="text-[10px] font-mono text-gray-400 z-10">{Math.round(width * 1.5)}%</span>
         </div>
       </div>
 
       <div className="w-full h-24 bg-[#0a0a0a] border border-white/5 rounded flex flex-col items-center py-2 relative overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(transparent_95%,rgba(0,255,255,0.05)_95%)] bg-[length:100%_4px]" />
-        <span className="text-[9px] font-mono text-gray-600 mb-1 uppercase">Widener</span>
+        <span className="text-[9px] font-mono text-gray-600 mb-1 uppercase text-center">Widener<br/>{Math.round(widener * 1.5)}%</span>
         <div className="flex-1 w-2 bg-[#1a1a1a] rounded-full relative overflow-hidden border border-black">
           <div 
             className="absolute bottom-0 w-full bg-cyan-600 shadow-[0_0_10px_rgba(0,255,255,0.3)]" 
@@ -156,6 +156,24 @@ export default function App() {
         {/* Main Content */}
         <main className="flex-1 p-6 flex flex-col gap-6">
           <Vectorscope />
+          
+          <div className="flex gap-4 p-2 bg-black/20 rounded border border-white/5 mb-4 items-center justify-center">
+            <div className="flex flex-col items-center">
+              <span className="text-[8px] font-mono text-gray-500 mb-1">LOW-MID</span>
+              <input type="range" className="w-24 accent-cyan-500 bg-[#222] h-1" />
+              <span className="text-[9px] font-mono text-cyan-400">200 Hz</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-[8px] font-mono text-gray-500 mb-1">MID-HIGH</span>
+              <input type="range" className="w-24 accent-cyan-500 bg-[#222] h-1" />
+              <span className="text-[9px] font-mono text-cyan-400">1000 Hz</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-[8px] font-mono text-gray-500 mb-1">HIGH</span>
+              <input type="range" className="w-24 accent-cyan-500 bg-[#222] h-1" />
+              <span className="text-[9px] font-mono text-cyan-400">5000 Hz</span>
+            </div>
+          </div>
           
           <div className="flex-1 flex gap-4">
             <BandControl index={0} />
