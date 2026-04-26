@@ -8,12 +8,31 @@ NexusImagerAudioProcessorEditor::NexusImagerAudioProcessorEditor (NexusImagerAud
 
     for (int i = 0; i < 4; ++i)
     {
+        auto prefix = juce::String(i);
+
+        // Configuración de Sliders
         addAndMakeVisible(bands[i].widthSlider);
         bands[i].widthSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
         bands[i].widthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+        bands[i].widthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "width" + prefix, bands[i].widthSlider);
 
         addAndMakeVisible(bands[i].widenSlider);
         bands[i].widenSlider.setSliderStyle(juce::Slider::LinearBarVertical);
+        bands[i].widenAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "widener" + prefix, bands[i].widenSlider);
+
+        // Configuración de Botones
+        addAndMakeVisible(bands[i].soloButton);
+        bands[i].soloButton.setButtonText("S");
+        bands[i].soloAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "solo" + prefix, bands[i].soloButton);
+
+        addAndMakeVisible(bands[i].muteButton);
+        bands[i].muteButton.setButtonText("M");
+        bands[i].muteAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "mute" + prefix, bands[i].muteButton);
+
+        // Selector de Modo
+        addAndMakeVisible(bands[i].modeSelector);
+        bands[i].modeSelector.addItemList(juce::StringArray{"Stereo", "Mid", "Side"}, 1);
+        bands[i].modeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.apvts, "mode" + prefix, bands[i].modeSelector);
     }
 }
 
@@ -53,7 +72,7 @@ void NexusImagerAudioProcessorEditor::drawVectorscope(juce::Graphics& g, juce::R
     // p = pivot + Point<float> (radius * cosf(angle), radius * sinf(angle))
 }
 
-void NexusImagerAudioProcessorEditor::resised()
+void NexusImagerAudioProcessorEditor::resized()
 {
     auto area = getLocalBounds().reduced(20);
     area.removeFromTop(220); // Espacio para el Vectorscope
@@ -61,9 +80,11 @@ void NexusImagerAudioProcessorEditor::resised()
     auto bandWidth = area.getWidth() / 4;
     for (int i = 0; i < 4; ++i)
     {
-        // NO usar const aquí porque removeFrom... modifica el rectángulo
         auto bArea = area.removeFromLeft(bandWidth).reduced(10);
         
+        auto modeArea = bArea.removeFromTop(20);
+        bands[i].modeSelector.setBounds(modeArea);
+
         auto sliderArea = bArea.removeFromTop(bArea.getHeight() * 0.7);
         bands[i].widthSlider.setBounds(sliderArea.removeFromTop(sliderArea.getHeight() * 0.6));
         bands[i].widenSlider.setBounds(sliderArea);

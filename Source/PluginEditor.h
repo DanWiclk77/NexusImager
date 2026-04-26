@@ -21,6 +21,12 @@ private:
         juce::ToggleButton soloButton;
         juce::ToggleButton muteButton;
         juce::ComboBox modeSelector;
+
+        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> widthAttachment;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> widenAttachment;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> soloAttachment;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> muteAttachment;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> modeAttachment;
     };
     BandUI bands[4];
 

@@ -35,4 +35,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: NexusImager_VST3_Windows
-        path: build/NexusImager_artefacts/Release/VST3/Nexus Imager.vst3
+        path: build/NexusImager_artefacts/Release/VST3/
+        if-no-files-found: error
