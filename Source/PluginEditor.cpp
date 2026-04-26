@@ -35,7 +35,7 @@ NexusImagerAudioProcessorEditor::NexusImagerAudioProcessorEditor (NexusImagerAud
         
         // Convert to percentage display
         bands[i].widthSlider.textFromValueFunction = [](double v) { return juce::String(v * 100.0, 0) + "%"; };
-        bands[i].widthSlider.valueFromTextFunction = [](const juce::String& t) { return t.initialSectionIgnoringFields("0123456789.").getDoubleValue() / 100.0; };
+        bands[i].widthSlider.valueFromTextFunction = [](const juce::String& t) { return t.initialSectionContainingOnly("0123456789.").getDoubleValue() / 100.0; };
         
         bands[i].widthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "wid" + prefix, bands[i].widthSlider);
 
@@ -49,7 +49,7 @@ NexusImagerAudioProcessorEditor::NexusImagerAudioProcessorEditor (NexusImagerAud
         bands[i].widenSlider.setSliderStyle(juce::Slider::LinearBarVertical);
         bands[i].widenSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
         bands[i].widenSlider.textFromValueFunction = [](double v) { return juce::String(v * 100.0, 0) + "%"; };
-        bands[i].widenSlider.valueFromTextFunction = [](const juce::String& t) { return t.initialSectionIgnoringFields("0123456789.").getDoubleValue() / 100.0; };
+        bands[i].widenSlider.valueFromTextFunction = [](const juce::String& t) { return t.initialSectionContainingOnly("0123456789.").getDoubleValue() / 100.0; };
         
         bands[i].widenAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "wdr" + prefix, bands[i].widenSlider);
 

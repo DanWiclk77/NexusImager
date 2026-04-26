@@ -68,7 +68,46 @@ void NexusImagerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     // 1. Dividir en bandas (usando la lógica del crossover)
     crossover.process(juce::dsp::AudioBlock<float>(buffer), bandBuffers);
 
-    // ... (Procesamiento de motores) ...
+    // 2. Procesar cada banda con su StereoEngine
+    bool anySolo = false;
+    for (int i = 0; i < 4; ++i)
+    {
+        auto* pSolo = apvts.getRawParameterValue("sol" + juce::String(i));
+        if (pSolo != nullptr && pSolo->load() > 0.5f)
+        {
+            anySolo = true;
+            break;
+        }
+    }
+
+    for (int i = 0; i < 4; ++i)
+    {
+        juce::String id = juce::String(i);
+        
+        auto* pWidth = apvts.getRawParameterValue("wid" + id);
+        auto* pWiden = apvts.getRawParameterValue("wdr" + id);
+        auto* pMode  = apvts.getRawParameterValue("mod" + id);
+        auto* pMute  = apvts.getRawParameterValue("mut" + id);
+        auto* pSolo  = apvts.getRawParameterValue("sol" + id);
+
+        if (pWidth == nullptr || pWiden == nullptr || pMode == nullptr || pMute == nullptr || pSolo == nullptr)
+            continue;
+
+        auto width = pWidth->load();
+        auto widen = pWiden->load();
+        auto mode  = (int)pMode->load();
+        auto mute  = pMute->load() > 0.5f;
+        auto solo  = pSolo->load() > 0.5f;
+
+        bool shouldProcess = true;
+        if (anySolo && !solo) shouldProcess = false;
+        if (mute) shouldProcess = false;
+
+        float* lPtr = bandBuffers[i].getWritePointer(0);
+        float* rPtr = bandBuffers[i].getNumChannels() > 1 ? bandBuffers[i].getWritePointer(1) : nullptr;
+
+        engines[i].processBand(lPtr, rPtr, buffer.getNumSamples(), width, widen, mode, !shouldProcess);
+    }
 
     // 3. Sumar bandas de vuelta al buffer principal
     buffer.clear();

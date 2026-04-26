@@ -3,13 +3,13 @@ import { motion } from 'motion/react';
 import { Volume2, VolumeX, Eye, EyeOff, LayoutPanelLeft, Layers } from 'lucide-react';
 
 const BandControl = ({ index }: { index: number }) => {
-  const [width, setWidth] = useState(100);
-  const [widener, setWidener] = useState(0);
+  const [width, setWidth] = useState(1.0);
+  const [widener, setWidener] = useState(0.0);
   const [isSolo, setIsSolo] = useState(false);
   const [isMute, setIsMute] = useState(false);
   const [mode, setMode] = useState('Stereo');
 
-  const rotation = (width / 200) * 270 - 135;
+  const rotation = (width / 1.5) * 270 - 135;
 
   return (
     <div className="flex-1 flex flex-col items-center bg-[#111] border border-white/5 rounded-sm p-3 gap-4 shadow-inner">
@@ -34,17 +34,17 @@ const BandControl = ({ index }: { index: number }) => {
           >
             <div className="w-1 h-3 bg-cyan-500 rounded-full shadow-[0_0_8px_cyan]" />
           </motion.div>
-          <span className="text-[10px] font-mono text-gray-400 z-10">{Math.round(width * 1.5)}%</span>
+          <span className="text-[10px] font-mono text-gray-400 z-10">{Math.round(width * 100)}%</span>
         </div>
       </div>
 
       <div className="w-full h-24 bg-[#0a0a0a] border border-white/5 rounded flex flex-col items-center py-2 relative overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(transparent_95%,rgba(0,255,255,0.05)_95%)] bg-[length:100%_4px]" />
-        <span className="text-[9px] font-mono text-gray-600 mb-1 uppercase text-center">Widener<br/>{Math.round(widener * 1.5)}%</span>
+        <span className="text-[9px] font-mono text-gray-600 mb-1 uppercase text-center">Widener<br/>{Math.round(widener * 100)}%</span>
         <div className="flex-1 w-2 bg-[#1a1a1a] rounded-full relative overflow-hidden border border-black">
           <div 
             className="absolute bottom-0 w-full bg-cyan-600 shadow-[0_0_10px_rgba(0,255,255,0.3)]" 
-            style={{ height: `${widener}%` }} 
+            style={{ height: `${(widener / 1.5) * 100}%` }} 
           />
         </div>
       </div>
