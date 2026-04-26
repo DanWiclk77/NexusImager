@@ -38,7 +38,7 @@ private:
     StereoEngine engines[4];
     
     // Buffers para las bandas
-    juce::AudioBuffer<float> bandBuffers[4];
+    std::array<juce::AudioBuffer<float>, 4> bandBuffers;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NexusImagerAudioProcessor)
 };

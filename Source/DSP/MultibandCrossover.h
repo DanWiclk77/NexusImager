@@ -42,14 +42,36 @@ public:
     void process(const juce::dsp::AudioBlock<float>& inputBlock, std::array<juce::AudioBuffer<float>, 4>& buffers)
     {
         const int numSamples = (int)inputBlock.getNumSamples();
-        
-        // Simulación de 4 bandas usando filtros en cascada (LR4)
-        // Banda 0: Low, 1: Low-Mid, 2: High-Mid, 3: High
-        // En una implementación real, esto requiere buffers temporales y ruteo preciso
-        for (int ch = 0; ch < numChannels; ++ch)
+
+        // Limpiar buffers y copiar entrada para procesar en paralelo/cascada
+        for (int i = 0; i < 4; ++i)
         {
-            // Implementación simplificada para el ejemplo técnico
+            buffers[i].setSize(numChannels, numSamples, false, false, true);
+            buffers[i].clear();
+            
+            for (int ch = 0; ch < numChannels; ++ch)
+                buffers[i].copyFrom(ch, 0, inputBlock.getChannelPointer(ch), numSamples);
         }
+
+        // Diseño de cascada para separación de 4 bandas
+        juce::dsp::AudioBlock<float> b0(buffers[0]);
+        juce::dsp::AudioBlock<float> b1(buffers[1]);
+        juce::dsp::AudioBlock<float> b2(buffers[2]);
+        juce::dsp::AudioBlock<float> b3(buffers[3]);
+
+        // Banda 0: Low
+        filters[0].process(juce::dsp::ProcessContextReplacing<float>(b0));
+
+        // Banda 1: Low-Mid
+        highFilters[0].process(juce::dsp::ProcessContextReplacing<float>(b1));
+        filters[1].process(juce::dsp::ProcessContextReplacing<float>(b1));
+
+        // Banda 2: High-Mid
+        highFilters[1].process(juce::dsp::ProcessContextReplacing<float>(b2));
+        filters[2].process(juce::dsp::ProcessContextReplacing<float>(b2));
+
+        // Banda 3: High
+        highFilters[2].process(juce::dsp::ProcessContextReplacing<float>(b3));
     }
 
 private:

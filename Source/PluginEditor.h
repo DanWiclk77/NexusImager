@@ -9,7 +9,7 @@ public:
     ~NexusImagerAudioProcessorEditor() override;
 
     void paint (juce::Graphics&) override;
-    void resised() override;
+    void resized() override;
 
 private:
     NexusImagerAudioProcessor& audioProcessor;

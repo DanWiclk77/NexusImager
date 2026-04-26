@@ -37,7 +37,7 @@ public:
             float s = (left[i] - right[i]) * 0.5f;
 
             // 1. Mono to Stereo Widener (Decorrelación)
-            if (std::abs(s) < 0.0001f && wideningAmount > 0.0f)
+            if (std::fabsf(s) < 0.0001f && wideningAmount > 0.0f)
             {
                 // Decorrelación ligera para ensanchar mono
                 s = m * wideningAmount * 0.5f; 
