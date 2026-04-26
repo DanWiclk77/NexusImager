@@ -138,8 +138,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout NexusImagerAudioProcessor::c
     for (int i = 0; i < 4; ++i)
     {
         juce::String id = juce::String(i);
-        params.push_back(std::make_unique<juce::AudioParameterFloat>("wid" + id, "Stereo Enhancer " + id, 0.0f, 1.5f, 1.0f));
-        params.push_back(std::make_unique<juce::AudioParameterFloat>("wdr" + id, "Widener " + id, 0.0f, 1.5f, 0.0f));
+        params.push_back(std::make_unique<juce::AudioParameterFloat>("wid" + id, "Stereo Enhancer " + id, 0.0f, 2.5f, 1.0f));
+        params.push_back(std::make_unique<juce::AudioParameterFloat>("wdr" + id, "Widener " + id, 0.0f, 2.5f, 0.0f));
         params.push_back(std::make_unique<juce::AudioParameterBool>("mut" + id, "Mute " + id, false));
         params.push_back(std::make_unique<juce::AudioParameterBool>("sol" + id, "Solo " + id, false));
         params.push_back(std::make_unique<juce::AudioParameterChoice>("mod" + id, "Mode " + id, juce::StringArray{"Stereo", "Mid", "Side"}, 0));

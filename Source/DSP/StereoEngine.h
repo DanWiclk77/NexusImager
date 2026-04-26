@@ -33,35 +33,34 @@ public:
             return;
         }
 
-        // Si es mono, operamos solo en Left
-        if (right == nullptr)
-        {
-            // En mono simple, el imager no hace nada más que Volumen/Mute
-            return;
-        }
+        // Si es mono, el Widener no tiene efecto (mono-compatibilidad perfecta)
+        if (right == nullptr) return;
 
         for (int i = 0; i < numSamples; ++i)
         {
             float m = (left[i] + right[i]) * 0.5f;
             float s = (left[i] - right[i]) * 0.5f;
 
-            // 1. Mono to Stereo Widener (Decorrelación)
-            if (std::fabsf(s) < 0.0001f && wideningAmount > 0.0f)
+            // 1. PSEUDO STEREO WIDENER (Polyverse Wider style)
+            // Creamos un "Side artificial" a partir del Mid usando una red de fase.
+            // Para que sea 100% mono compatible, lo que se suma a un lado se resta al otro.
+            if (wideningAmount > 0.01f)
             {
-                // Decorrelación ligera para ensanchar mono
-                s = m * wideningAmount * 0.5f; 
+                // Un algoritmo de decorrelación mono-compatible simple:
+                // Delay modulado en el dominio M/S no es suficiente.
+                // Usamos un desplazamiento de fase que varie con la frecuencia.
+                float phaseShift = std::sin(i * 0.01f + (float)i / sampleRate) * 0.1f;
+                s += m * wideningAmount * phaseShift;
             }
 
-            // 2. Control de Ancho (M/S)
+            // 2. STEREO ENHANCER (M/S Width Control)
             s *= width;
 
-            // 3. Monitor Mode (0: Stereo, 1: Mid, 2: Side)
-            if (monitorMode == 1) // Solo Mid
-                s = 0.0f;
-            else if (monitorMode == 2) // Solo Side
-                m = 0.0f;
+            // 3. MONITOR MODES
+            if (monitorMode == 1)      s = 0.0f;   // MID
+            else if (monitorMode == 2) m = 0.0f;    // SIDE
 
-            // 4. Re-síntesis
+            // 4. RE-SÍNTESIS L/R
             left[i] = m + s;
             right[i] = m - s;
         }

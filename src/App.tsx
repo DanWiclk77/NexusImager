@@ -9,7 +9,7 @@ const BandControl = ({ index }: { index: number }) => {
   const [isMute, setIsMute] = useState(false);
   const [mode, setMode] = useState('Stereo');
 
-  const rotation = (width / 1.5) * 270 - 135;
+  const rotation = (width / 2.5) * 270 - 135;
 
   return (
     <div className="flex-1 flex flex-col items-center bg-[#111] border border-white/5 rounded-sm p-3 gap-4 shadow-inner">
@@ -44,7 +44,7 @@ const BandControl = ({ index }: { index: number }) => {
         <div className="flex-1 w-2 bg-[#1a1a1a] rounded-full relative overflow-hidden border border-black">
           <div 
             className="absolute bottom-0 w-full bg-cyan-600 shadow-[0_0_10px_rgba(0,255,255,0.3)]" 
-            style={{ height: `${(widener / 1.5) * 100}%` }} 
+            style={{ height: `${(widener / 2.5) * 100}%` }} 
           />
         </div>
       </div>
@@ -52,15 +52,15 @@ const BandControl = ({ index }: { index: number }) => {
       <div className="flex gap-2 w-full">
         <button 
           onClick={() => setIsSolo(!isSolo)}
-          className={`flex-1 py-1 rounded text-[10px] font-bold border transition-all ${isSolo ? 'bg-yellow-500/20 text-yellow-500 border-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.2)]' : 'bg-[#1a1a1a] text-gray-500 border-white/5'}`}
+          className={`flex-1 py-1 rounded text-[8px] font-bold border transition-all ${isSolo ? 'bg-cyan-500/20 text-cyan-500 border-cyan-500 shadow-[0_0_10px_rgba(0,255,255,0.2)]' : 'bg-[#1a1a1a] text-gray-500 border-white/5'}`}
         >
-          S
+          SOLO
         </button>
         <button 
           onClick={() => setIsMute(!isMute)}
-          className={`flex-1 py-1 rounded text-[10px] font-bold border transition-all ${isMute ? 'bg-red-500/20 text-red-500 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : 'bg-[#1a1a1a] text-gray-500 border-white/5'}`}
+          className={`flex-1 py-1 rounded text-[8px] font-bold border transition-all ${isMute ? 'bg-red-500/20 text-red-500 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : 'bg-[#1a1a1a] text-gray-500 border-white/5'}`}
         >
-          M
+          MUTE
         </button>
       </div>
     </div>

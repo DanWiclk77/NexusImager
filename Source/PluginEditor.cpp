@@ -55,11 +55,11 @@ NexusImagerAudioProcessorEditor::NexusImagerAudioProcessorEditor (NexusImagerAud
 
         // Buttons
         addAndMakeVisible(bands[i].soloButton);
-        bands[i].soloButton.setButtonText("S");
+        bands[i].soloButton.setButtonText("SOLO");
         bands[i].soloAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "sol" + prefix, bands[i].soloButton);
 
         addAndMakeVisible(bands[i].muteButton);
-        bands[i].muteButton.setButtonText("M");
+        bands[i].muteButton.setButtonText("MUTE");
         bands[i].muteAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "mut" + prefix, bands[i].muteButton);
     }
 
@@ -122,10 +122,13 @@ void NexusImagerAudioProcessorEditor::drawVectorscope(juce::Graphics& g, juce::R
 {
     if (scopePoints.empty()) return;
 
+    juce::Graphics::ScopedSaveState state(g);
+    g.reduceClipRegion(area);
+
     juce::Path p;
     float centerX = (float)area.getCentreX();
     float centerY = (float)area.getCentreY();
-    float scale = (float)area.getWidth() * 0.4f;
+    float scale = (float)area.getWidth() * 0.45f; // Aumentamos un poco el zoom ya que ahora clipamos
 
     bool first = true;
     for (const auto& pt : scopePoints)
