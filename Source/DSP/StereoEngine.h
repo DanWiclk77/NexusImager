@@ -11,24 +11,26 @@
 class StereoEngine
 {
 public:
-    StereoEngine() {}
+    StereoEngine() 
+    {
+        delayBuffer.setSize(1, 4096);
+        delayBuffer.clear();
+    }
 
     void prepare(double sampleRate)
     {
         this->sampleRate = sampleRate;
-        
-        // Preparar decorreladores (All-pass networks para evitar comb filtering)
-        for (auto& ap : allPassFilters)
-            ap.prepare({ sampleRate, (juce::uint32)2, 1 });
+        delayBuffer.clear();
+        writePos = 0;
     }
 
     void processBand(float* left, float* right, int numSamples, float width, float wideningAmount, int monitorMode, bool isMuted)
     {
-        if (numSamples <= 0) return;
+        if (numSamples <= 0 || left == nullptr) return;
         
-        if (isMuted || left == nullptr)
+        if (isMuted)
         {
-            if (left != nullptr) juce::FloatVectorOperations::clear(left, numSamples);
+            juce::FloatVectorOperations::clear(left, numSamples);
             if (right != nullptr) juce::FloatVectorOperations::clear(right, numSamples);
             return;
         }
@@ -36,31 +38,42 @@ public:
         // Si es mono, el Widener no tiene efecto (mono-compatibilidad perfecta)
         if (right == nullptr) return;
 
+        // Widener Delay params (approx 15ms)
+        const int delaySamples = (int)(0.015 * sampleRate); 
+
         for (int i = 0; i < numSamples; ++i)
         {
             float m = (left[i] + right[i]) * 0.5f;
             float s = (left[i] - right[i]) * 0.5f;
 
-            // 1. PSEUDO STEREO WIDENER (Polyverse Wider style)
-            // Creamos un "Side artificial" a partir del Mid usando una red de fase.
-            // Para que sea 100% mono compatible, lo que se suma a un lado se resta al otro.
+            // --- MONO-COMPATIBLE WIDENER (Sidewidener/Wider Methodology) ---
+            // Guardamos Mid en el buffer
+            delayBuffer.setSample(0, writePos, m);
+            
             if (wideningAmount > 0.01f)
             {
-                // Un algoritmo de decorrelación mono-compatible simple:
-                // Delay modulado en el dominio M/S no es suficiente.
-                // Usamos un desplazamiento de fase que varie con la frecuencia.
-                float phaseShift = std::sin(i * 0.01f + (float)i / sampleRate) * 0.1f;
-                s += m * wideningAmount * phaseShift;
+                // Extraemos una versión retrasada del Mid
+                int readPos = (writePos - delaySamples + delayBuffer.getNumSamples()) % delayBuffer.getNumSamples();
+                float delayedMid = delayBuffer.getSample(0, readPos);
+                
+                // Inyectamos el delay en el SIDE. 
+                // Al ser inyectado solo en el Side (S = L-R), al sumar L+R en mono se cancela:
+                // L_out = M + (S + delayedMid)
+                // R_out = M - (S + delayedMid)
+                // L+R = 2M. Perfecta compatibilidad mono.
+                s += delayedMid * wideningAmount * 0.8f; // Factor 0.8 para balance
             }
 
-            // 2. STEREO ENHANCER (M/S Width Control)
+            writePos = (writePos + 1) % delayBuffer.getNumSamples();
+
+            // --- STEREO ENHANCER (M/S Width Control) ---
             s *= width;
 
-            // 3. MONITOR MODES
+            // --- MONITOR MODES ---
             if (monitorMode == 1)      s = 0.0f;   // MID
             else if (monitorMode == 2) m = 0.0f;    // SIDE
 
-            // 4. RE-SÍNTESIS L/R
+            // --- RE-SÍNTESIS L/R ---
             left[i] = m + s;
             right[i] = m - s;
         }
@@ -68,5 +81,6 @@ public:
 
 private:
     double sampleRate = 44100.0;
-    std::array<juce::dsp::IIR::Filter<float>, 4> allPassFilters;
+    juce::AudioBuffer<float> delayBuffer;
+    int writePos = 0;
 };

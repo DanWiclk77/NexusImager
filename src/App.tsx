@@ -26,8 +26,8 @@ const BandControl = ({ index }: { index: number }) => {
       </div>
 
       <div className="relative flex flex-col items-center group">
-        <span className="text-[10px] font-mono text-gray-500 mb-2 uppercase tracking-widest group-hover:text-cyan-400 transition-colors">Stereo Enhancer</span>
-        <div className="relative w-16 h-16 rounded-full bg-gradient-to-b from-[#222] to-[#0a0a0a] border-2 border-[#333] flex items-center justify-center shadow-lg cursor-pointer overflow-hidden">
+        <span className="text-[10px] font-mono text-gray-500 mb-2 uppercase tracking-widest group-hover:text-cyan-400 transition-colors text-center">Stereo Enhancer</span>
+        <div className="relative w-16 h-16 rounded-full bg-gradient-to-b from-[#222] to-[#0a0a0a] border-2 border-[#333] flex items-center justify-center shadow-lg cursor-pointer overflow-hidden mb-2">
           <motion.div 
             style={{ rotate: rotation }}
             className="absolute inset-0 flex items-start justify-center pt-1"
@@ -36,17 +36,27 @@ const BandControl = ({ index }: { index: number }) => {
           </motion.div>
           <span className="text-[10px] font-mono text-gray-400 z-10">{Math.round(width * 100)}%</span>
         </div>
+        <input 
+          type="range" min="0" max="2.5" step="0.01" value={width} 
+          onChange={(e) => setWidth(parseFloat(e.target.value))}
+          className="w-20 accent-cyan-500 h-1 bg-[#222] rounded-lg cursor-pointer"
+        />
       </div>
 
-      <div className="w-full h-24 bg-[#0a0a0a] border border-white/5 rounded flex flex-col items-center py-2 relative overflow-hidden">
+      <div className="w-full flex-1 min-h-[120px] bg-[#0a0a0a] border border-white/5 rounded flex flex-col items-center py-2 relative overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(transparent_95%,rgba(0,255,255,0.05)_95%)] bg-[length:100%_4px]" />
-        <span className="text-[9px] font-mono text-gray-600 mb-1 uppercase text-center">Widener<br/>{Math.round(widener * 100)}%</span>
-        <div className="flex-1 w-2 bg-[#1a1a1a] rounded-full relative overflow-hidden border border-black">
+        <span className="text-[9px] font-mono text-gray-600 mb-2 uppercase text-center">Widener<br/>{Math.round(widener * 100)}%</span>
+        <div className="flex-1 w-2 bg-[#1a1a1a] rounded-full relative overflow-hidden border border-black mb-2">
           <div 
             className="absolute bottom-0 w-full bg-cyan-600 shadow-[0_0_10px_rgba(0,255,255,0.3)]" 
-            style={{ height: `${(widener / 2.5) * 100}%` }} 
+            style={{ height: `${(widener / 2.0) * 100}%` }} 
           />
         </div>
+        <input 
+          type="range" min="0" max="2" step="0.01" value={widener} 
+          onChange={(e) => setWidener(parseFloat(e.target.value))}
+          className="w-16 h-1 accent-cyan-500 -rotate-90 origin-center absolute -right-4 top-1/2 translate-y-4"
+        />
       </div>
 
       <div className="flex gap-2 w-full">
