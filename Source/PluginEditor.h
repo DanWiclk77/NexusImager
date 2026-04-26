@@ -20,6 +20,7 @@ private:
         juce::Slider widenSlider;
         juce::ToggleButton soloButton;
         juce::ToggleButton muteButton;
+        juce::ComboBox modeSelector;
     };
     BandUI bands[4];
 

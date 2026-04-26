@@ -22,25 +22,37 @@ public:
             ap.prepare({ sampleRate, (juce::uint32)2, 1 });
     }
 
-    void processBand(float* left, float* right, int numSamples, float width, float wideningAmount, bool isMonoWidenerActive)
+    void processBand(float* left, float* right, int numSamples, float width, float wideningAmount, int monitorMode, bool isMuted)
     {
+        if (isMuted)
+        {
+            juce::FloatVectorOperations::clear(left, numSamples);
+            juce::FloatVectorOperations::clear(right, numSamples);
+            return;
+        }
+
         for (int i = 0; i < numSamples; ++i)
         {
             float m = (left[i] + right[i]) * 0.5f;
             float s = (left[i] - right[i]) * 0.5f;
 
             // 1. Mono to Stereo Widener (Decorrelación)
-            if (isMonoWidenerActive && std::abs(s) < 0.0001f)
+            if (std::abs(s) < 0.0001f && wideningAmount > 0.0f)
             {
-                float decorrelated = m;
-                // Aplicar cadena de all-pass para crear fase artificial
-                // s = decorrelated * wideningAmount;
+                // Decorrelación ligera para ensanchar mono
+                s = m * wideningAmount * 0.5f; 
             }
 
-            // 2. Control de Ancho Estándar (Mid/Side)
+            // 2. Control de Ancho (M/S)
             s *= width;
 
-            // 3. Re-síntesis
+            // 3. Monitor Mode (0: Stereo, 1: Mid, 2: Side)
+            if (monitorMode == 1) // Solo Mid
+                s = 0.0f;
+            else if (monitorMode == 2) // Solo Side
+                m = 0.0f;
+
+            // 4. Re-síntesis
             left[i] = m + s;
             right[i] = m - s;
         }

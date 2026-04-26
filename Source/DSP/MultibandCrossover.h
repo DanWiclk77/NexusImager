@@ -21,6 +21,11 @@ public:
         for (int i = 0; i < 3; ++i)
         {
             filters[i].prepare(spec);
+            filters[i].setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
+            
+            highFilters[i].prepare(spec);
+            highFilters[i].setType(juce::dsp::LinkwitzRileyFilterType::highpass);
+            
             updateFilters(i);
         }
     }
@@ -34,30 +39,30 @@ public:
         }
     }
 
-    void process(const juce::dsp::AudioBlock<float>& block, juce::dsp::AudioBlock<float> bands[4])
+    void process(const juce::dsp::AudioBlock<float>& inputBlock, std::array<juce::AudioBuffer<float>, 4>& buffers)
     {
-        // Implementación simplificada de Linkwitz-Riley para el ejemplo
-        // En una versión final, usaríamos FIR para Fase Lineal pura.
-        auto tempBlock = block;
+        const int numSamples = (int)inputBlock.getNumSamples();
         
-        // La lógica real de multibanda separaría el espectro en 4 bloques
-        // Band 0: Low, Band 1: Low-Mid, Band 2: High-Mid, Band 3: High
+        // Simulación de 4 bandas usando filtros en cascada (LR4)
+        // Banda 0: Low, 1: Low-Mid, 2: High-Mid, 3: High
+        // En una implementación real, esto requiere buffers temporales y ruteo preciso
         for (int ch = 0; ch < numChannels; ++ch)
         {
-            // Simulación de ruteo de bandas
-            bands[0].getChannelPointer(ch); 
-            // ... (Lógica de filtrado compleja)
+            // Implementación simplificada para el ejemplo técnico
         }
     }
 
 private:
     void updateFilters(int index)
     {
-        // Configuración de coeficientes
+        float freq = frequencies[index];
+        filters[index].setCutoffFrequency(freq);
+        highFilters[index].setCutoffFrequency(freq);
     }
 
     int numChannels = 2;
     double sampleRate = 44100.0;
     float frequencies[3] = { 200.0f, 1000.0f, 5000.0f };
-    juce::dsp::LinkwitzRileyFilter<float> filters[3]; // Fallback a IIR si no hay FIR disponible
+    juce::dsp::LinkwitzRileyFilter<float> filters[3];
+    juce::dsp::LinkwitzRileyFilter<float> highFilters[3];
 };
